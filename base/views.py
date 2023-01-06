@@ -1,19 +1,23 @@
+from django.db.models import Q
 from django.shortcuts import render, redirect
 
 from .forms import RoomForm
-from .models import Room
-
-
-# rooms = [
-#     {'id': 1, 'name': 'Lets Learn Python!'},
-#     {'id': 2, 'name': 'Design with me'},
-#     {'id': 3, 'name': 'Frontend developers'}
-# ]
+from .models import Room, Topic
 
 
 def home(request):
-    rooms = Room.objects.all()
-    context = {'rooms': rooms}
+    q = request.GET.get('q') if request.GET.get('q') != None else ''
+
+    rooms = Room.objects.filter(
+        Q(topic__name__icontains=q) or
+        Q(name__icontains=q) or
+        Q(description__icontains=q)
+    )
+
+    topics = Topic.objects.all()
+    room_count = rooms.count()
+
+    context = {'rooms': rooms, 'topics': topics, 'room_count': room_count}
     return render(request, 'base/home.html', context)
 
 
